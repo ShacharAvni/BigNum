@@ -5,6 +5,7 @@
 
 class BigNum
 {
+friend bool operator>(const BigNum& a, const BigNum& b);
 friend BigNum operator+(const BigNum& a, const BigNum& b);
 
 public:
@@ -22,4 +23,5 @@ private:
     std::vector<char> digits;
 };
 
+bool operator>(const BigNum& a, const BigNum& b);
 BigNum operator+(const BigNum& a, const BigNum& b);

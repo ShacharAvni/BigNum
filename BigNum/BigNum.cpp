@@ -91,6 +91,43 @@ std::string BigNum::display() const
     return reversed.data();
 }
 
+bool operator>(const BigNum& a, const BigNum& b)
+{
+    if (a.numDigits() > b.numDigits())
+    {
+        return true;
+    }
+
+    if (b.numDigits() > a.numDigits())
+    {
+        return false;
+    }
+
+    auto aIter = a.digits.rbegin();
+    auto bIter = b.digits.rbegin();
+
+    while (aIter != a.digits.rend())
+    {
+        unsigned int digitA = digitToUint(*aIter);
+        unsigned int digitB = digitToUint(*bIter);
+
+        if (digitA > digitB)
+        {
+            return true;
+        }
+
+        if (digitA < digitB)
+        {
+            return false;
+        }
+
+        ++aIter;
+        ++bIter;
+    }
+
+    return false;
+}
+
 BigNum operator+(const BigNum& a, const BigNum& b)
 {
     size_t maxDigits = std::max(a.numDigits(), b.numDigits());

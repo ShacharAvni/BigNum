@@ -8,7 +8,7 @@ static std::vector<char> uintToChars(unsigned int n)
 {
     if (n == 0)
     {
-        return { '0' };
+        return {'0'};
     }
 
     std::vector<char> chars;
@@ -34,13 +34,27 @@ BigNum::BigNum()
 {
 }
 
-BigNum::BigNum(const std::string& s)
+BigNum::BigNum(std::string s)
 {
     if (s.empty())
     {
         assert(false);
         digits.resize(1, '0');
         return;
+    }
+
+    if (s[0] == '-')
+    {
+        if (s.length() == 1)
+        {
+            assert(false);
+            digits.resize(1, '0');
+            return;
+        }
+
+        hasNegativeSign = true;
+
+        s = s.substr(1, s.length() - 1);
     }
 
     digits.resize(s.length());
@@ -62,7 +76,18 @@ BigNum::BigNum(const std::string& s)
 
 BigNum::BigNum(unsigned int n)
     : digits(uintToChars(n))
+    , hasNegativeSign(false)
 {
+}
+
+bool BigNum::isPositive() const
+{
+    return !isNegative();
+}
+
+bool BigNum::isNegative() const
+{
+    return hasNegativeSign;
 }
 
 size_t BigNum::numDigits() const
@@ -83,16 +108,80 @@ unsigned int BigNum::digitAt(size_t i) const
 
 std::string BigNum::display() const
 {
+    std::vector<char> displayed;
+
+    displayed.reserve(1 + numDigits() + 1);
+
+    if (isNegative())
+    {
+        displayed.push_back('-');
+    }
+
     std::vector<char> reversed = digits;
     std::reverse(reversed.begin(), reversed.end());
 
-    reversed.push_back('\0');
+    displayed.insert(displayed.end(), reversed.begin(), reversed.end());
 
-    return reversed.data();
+    displayed.push_back('\0');
+
+    return displayed.data();
+}
+
+bool operator<(const BigNum& a, const BigNum& b)
+{
+    return !(a >= b);
+}
+
+bool operator<=(const BigNum& a, const BigNum& b)
+{
+    return !(a > b);
+}
+
+bool operator==(const BigNum& a, const BigNum& b)
+{
+    if (a.isNegative() && b.isPositive())
+    {
+        return false;
+    }
+
+    if (a.isPositive() && b.isNegative())
+    {
+        return false;
+    }
+
+    if (a.numDigits() != b.numDigits())
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < a.numDigits(); ++i)
+    {
+        if (a.digitAt(i) != b.digitAt(i))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool operator>(const BigNum& a, const BigNum& b)
 {
+    if (a.isNegative() && b.isPositive())
+    {
+        return false;
+    }
+
+    if (a.isPositive() && b.isNegative())
+    {
+        return true;
+    }
+
+    if (a.isNegative() && b.isNegative())
+    {
+        return (-(a) < -(b));
+    }
+
     if (a.numDigits() > b.numDigits())
     {
         return true;
@@ -128,8 +217,28 @@ bool operator>(const BigNum& a, const BigNum& b)
     return false;
 }
 
+bool operator>=(const BigNum& a, const BigNum& b)
+{
+    return ((a > b) || (a == b));
+}
+
 BigNum operator+(const BigNum& a, const BigNum& b)
 {
+    if (a.isNegative() && b.isPositive())
+    {
+        return (b - -(a));
+    }
+
+    if (a.isPositive() && b.isNegative())
+    {
+        return (a - -(b));
+    }
+
+    if (a.isNegative() && b.isNegative())
+    {
+        return -(-(a) + -(b));
+    }
+
     size_t maxDigits = std::max(a.numDigits(), b.numDigits());
 
     std::list<std::vector<char>> carries;
@@ -173,6 +282,71 @@ BigNum operator+(const BigNum& a, const BigNum& b)
         }
 
         ++i;
+    }
+
+    return result;
+}
+
+BigNum operator-(const BigNum& num)
+{
+    BigNum negated = num;
+    negated.hasNegativeSign = !negated.hasNegativeSign;
+
+    return negated;
+}
+
+BigNum operator-(const BigNum& a, const BigNum& b)
+{
+    if (a.isNegative() && b.isPositive())
+    {
+        return -(-(a) + b);
+    }
+
+    if (a.isPositive() && b.isNegative())
+    {
+        return (a + -(b));
+    }
+
+    if (a.isNegative() && b.isNegative())
+    {
+        return (-(b) - -(a));
+    }
+
+    if (b > a)
+    {
+        return -(b - a);
+    }
+
+    BigNum result;
+
+    BigNum aCopy = a;
+
+    size_t maxDigits = std::max(a.numDigits(), b.numDigits());
+    for (size_t i = 0; i < maxDigits; ++i)
+    {
+        unsigned int currentDifference = aCopy.digitAt(i);
+
+        if (aCopy.digitAt(i) < b.digitAt(i))
+        {
+            currentDifference += 10;
+
+            size_t borrowIndex = i + 1;
+
+            while (aCopy.digitAt(borrowIndex) == 0)
+            {
+                aCopy.digits[borrowIndex] = '9';
+                ++borrowIndex;
+            }
+
+            aCopy.digits[borrowIndex] -= static_cast<char>(1);
+        }
+
+        currentDifference -= b.digitAt(i);
+
+        std::vector<char> chars = uintToChars(currentDifference);
+        assert(chars.size() == 1);
+
+        result.digits.push_back(chars[0]);
     }
 
     return result;

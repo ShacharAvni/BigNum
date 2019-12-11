@@ -398,18 +398,6 @@ BigNum multLessThan10(const BigNum& lessThan10, const BigNum& n)
 
 BigNum operator*(const BigNum& a, const BigNum& b)
 {
-    static const BigNum ten("10");
-
-    if (abs(a) < ten)
-    {
-        return multLessThan10(a, b);
-    }
-
-    if (abs(b) < ten)
-    {
-        return multLessThan10(b, a);
-    }
-
     BigNum result("0");
 
     for (size_t i = 0; i < a.numDigits(); ++i)

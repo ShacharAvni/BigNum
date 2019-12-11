@@ -75,6 +75,24 @@ void subtractionUnitTests()
     singleSubtractionUnitTest("-3456", "1234", "-4690");
 }
 
+void singleMultiplicationUnitTest(const std::string& a, const std::string& b, const std::string& expectedResult)
+{
+    runUnitTest(a, b, " * ", (BigNum(a) * BigNum(b)).display(), expectedResult);
+}
+
+void multiplicationUnitTests()
+{
+    singleMultiplicationUnitTest("0", "0", "0");
+    singleMultiplicationUnitTest("1", "0", "0");
+    singleMultiplicationUnitTest("1", "1", "1");
+    singleMultiplicationUnitTest("2468", "1234", "3045512");
+    singleMultiplicationUnitTest("97654321", "812345512", "79329049391757352");
+
+    singleMultiplicationUnitTest("1", "-1", "-1");
+    singleMultiplicationUnitTest("-1234", "-3456", "4264704");
+    singleMultiplicationUnitTest("-3456", "1234", "-4264704");
+}
+
 void singleLessThanUnitTest(const std::string& a, const std::string& b, bool expectedResult)
 {
     runUnitTest(a, b, " < ", (BigNum(a) < BigNum(b)), expectedResult);
@@ -115,6 +133,7 @@ int main()
 {
     additionUnitTests();
     subtractionUnitTests();
+    multiplicationUnitTests();
     lessThanUnitTests();
     greaterThanUnitTests();
 

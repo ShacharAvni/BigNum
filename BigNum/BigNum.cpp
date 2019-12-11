@@ -106,6 +106,19 @@ unsigned int BigNum::digitAt(size_t i) const
     return digitToUint(digits[i]);
 }
 
+BigNum BigNum::multPower10(size_t power10) const
+{
+    std::vector<char> zeroes(power10, '0');
+
+    BigNum result;
+    result.digits.reserve(zeroes.size() + this->digits.size());
+
+    result.digits.insert(result.digits.end(), zeroes.begin(), zeroes.end());
+    result.digits.insert(result.digits.end(), this->digits.begin(), this->digits.end());
+
+    return result;
+}
+
 std::string BigNum::display() const
 {
     std::vector<char> displayed;
@@ -287,6 +300,11 @@ BigNum operator+(const BigNum& a, const BigNum& b)
     return result;
 }
 
+void operator+=(BigNum& a, const BigNum& b)
+{
+    a = a + b;
+}
+
 BigNum operator-(const BigNum& num)
 {
     BigNum negated = num;
@@ -348,6 +366,69 @@ BigNum operator-(const BigNum& a, const BigNum& b)
 
         result.digits.push_back(chars[0]);
     }
+
+    return result;
+}
+
+bool productIsNegative(const BigNum& a, const BigNum& b)
+{
+    return ((a.isNegative() && !b.isNegative()) || (!a.isNegative() && b.isNegative()));
+}
+
+BigNum multLessThan10(const BigNum& lessThan10, const BigNum& n)
+{
+    BigNum result("0");
+
+    BigNum absN = abs(n);
+
+    unsigned int absLessThan10AsNum = lessThan10.digitAt(0);
+
+    for (unsigned int i = 0; i < absLessThan10AsNum; ++i)
+    {
+        result += absN;
+    }
+
+    if (productIsNegative(lessThan10, n))
+    {
+        return -result;
+    }
+
+    return result;
+}
+
+BigNum operator*(const BigNum& a, const BigNum& b)
+{
+    static const BigNum ten("10");
+
+    if (abs(a) < ten)
+    {
+        return multLessThan10(a, b);
+    }
+
+    if (abs(b) < ten)
+    {
+        return multLessThan10(b, a);
+    }
+
+    BigNum result("0");
+
+    for (size_t i = 0; i < a.numDigits(); ++i)
+    {
+        result += multLessThan10(BigNum(a.digitAt(i)), b).multPower10(i);
+    }
+
+    if (productIsNegative(a, b))
+    {
+        return -result;
+    }
+
+    return result;
+}
+
+BigNum abs(const BigNum& n)
+{
+    BigNum result = n;
+    result.hasNegativeSign = false;
 
     return result;
 }

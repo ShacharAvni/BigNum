@@ -44,6 +44,9 @@ public:
 
     std::string display() const;
 
+    BigNum multPower10(size_t power10) const;
+    BigNum dividePower10(size_t power10) const;
+
 private:
     BigNum();
 
@@ -53,9 +56,6 @@ private:
 
     BigNum removeLeadingZeroes() const;
     BigNum removeTrailingZeroes() const;
-
-    BigNum multPower10(size_t power10) const;
-    BigNum dividePower10(size_t power10) const;
 
     std::vector<char> digits;
     bool hasNegativeSign = false;
